@@ -1,0 +1,416 @@
+# =========================================================================
+# Home Assistant kod för att kontrollera effekten av kostnadsoptimering av 
+# elförbrukningen.
+# 
+# En beskrivning av installation, beräkningar och tankar bakom finns på 
+# https://ontour.ollivergarden.se/xxxxx¨
+#
+# OBS ! sensor.nordpool_kwh_se2_sek_2_10_025 och !env_var 
+# sensor.solax_grid_import måste bytas ut mot dina motsvarigheter
+#         
+# WishList:
+# * försäljning av el
+# *
+#
+# @Author   Tobias Rosén
+# @Date     2026-01-04
+#
+# @Todo:
+# fixa dashboard
+# Skriv tillhörande artikel
+# Publicera på Github publikt
+#  
+# =========================================================================
+
+
+# =========================================================================
+# Sensor - integration
+# **************************************
+# sensor.grid_import_energi
+#
+# Sensor - statistics
+# **************************************
+# sensor.medel_elkostnad_24h
+# sensor.medel_elimport_24h
+# sensor.medel_elkostnad_7d
+# sensor.medel_elimport_7d
+# sensor.medel_elkostnad_30d
+# sensor.medel_elimport_30d
+# sensor.medelpris_24h
+# sensor.medelpris_7d
+# sensor.medelpris_30d
+#
+# Utility meter
+# **************************************
+# sensor.grid_import_15m
+#
+# input number
+# **************************************
+# input_number.el_price_last_15min
+# input_number.el_import_last_15min
+# input_number.hus_el_elcertificatsavgift_ink_moms
+# input_number.hus_el_energiskatt
+# input_number.hus_el_rorlig_elnatsavg
+# 
+# Template - sensor
+# **************************************
+# sensor.elkostnad_foregaende_15_min
+# sensor.vagt_elpris_24h
+# sensor.vagt_elpris_7d
+# sensor.vagt_elpris_30d
+# sensor.medelpris_dag
+# sensor.besparing_24h
+# sensor.besparing_7d
+# sensor.besparing_30d
+#
+# Automations
+# **************************************
+# Spara totalt elpris föregående 15 min
+# Spara elförbrukning föregående 15 min
+# =========================================================================
+
+# ****************
+# Sensorer mm definerade i andra paket:
+# 
+#
+# ****************
+
+# ****************
+# Sensorer mm definerade på andra ställen:
+# 
+# == Solax integration ==
+# sensor.solax_grid_import
+#
+# == Nordpool integrationen ==
+# sensor.nordpool_kwh_se2_sek_2_10_025
+# 
+# ****************
+
+# En sensor för att göra om importerad effekt till importerad energi
+# byt ut sensor.solax_grid_import mot din effekt sensor.
+sensor:
+  - platform: integration
+    source: sensor.solax_grid_import
+    name: "Grid Import Energi"
+    unique_id: grid_import_energy
+    unit_prefix: k
+    method: left
+    round: 2
+    max_sub_interval:
+      minutes: 5
+
+# Glidandemedelvärde elkostnad senaste 24h.
+# Används för att beräkna vägt medelvärde elpris 24h
+  - platform: statistics
+    name: "Medel elkostnad 24h"
+    unique_id: avg_electic_cost_24h
+    entity_id: sensor.elkostnad_foregaende_15_min
+    state_characteristic: mean
+    max_age:
+      hours: 24
+
+# Glidandemedelvärde elimport senaste 24h. 
+# Används för att beräkna vägt medelvärde elpris och besparing 24h
+  - platform: statistics
+    name: "Medel elimport 24h"
+    unique_id: avg_electic_imp_24h
+    entity_id: input_number.el_import_last_15min
+    state_characteristic: mean
+    max_age:
+      hours: 24
+
+# Glidandemedelvärde elkostnad senaste 7d.
+# Används för att beräkna vägt medelvärde elpris 7d
+  - platform: statistics
+    name: "Medel elkostnad 7d"
+    unique_id: avg_electic_cost_7d
+    entity_id: sensor.elkostnad_foregaende_15_min
+    state_characteristic: mean
+    max_age:
+      hours: 168
+
+# Glidandemedelvärde elimport senaste 7d. 
+# Används för att beräkna vägt medelvärde elpris och besparing 7d
+  - platform: statistics
+    name: "Medel elimport 7d"
+    unique_id: avg_electic_imp_7d
+    entity_id: input_number.el_import_last_15min
+    state_characteristic: mean
+    max_age:
+      hours: 168
+
+# Glidandemedelvärde elkostnad senaste 30d.
+# Används för att beräkna vägt medelvärde elpris 30d
+  - platform: statistics
+    name: "Medel elkostnad 30d"
+    unique_id: avg_electic_cost_30d
+    entity_id: sensor.elkostnad_foregaende_15_min
+    state_characteristic: mean
+    max_age:
+      days: 30
+
+# Glidandemedelvärde elimport senaste 30d. 
+# Används för att beräkna vägt medelvärde elpris och besparing 30d
+  - platform: statistics
+    name: "Medel elimport 30d"
+    unique_id: avg_electic_imp_30d
+    entity_id: input_number.el_import_last_15min
+    state_characteristic: mean
+    max_age:
+      days: 30
+
+# Glidandemedelvärde linjärt medelpris senaste 24h.
+# Används för att beräkna besparing 24h 
+  - platform: statistics
+    name: "Medelpris 24h"
+    unique_id: avg_electic_price_24h
+    entity_id: input_number.el_price_last_15min
+    state_characteristic: mean
+    max_age:
+      hours: 24
+
+
+# Glidandemedelvärde linjärt medelpris senaste 7d.
+# Används för att beräkna besparing 7d 
+  - platform: statistics
+    name: "Medelpris 7d"
+    unique_id: avg_electic_price_7d
+    entity_id: input_number.el_price_last_15min
+    state_characteristic: mean
+    max_age:
+      hours: 168
+
+
+# Glidandemedelvärde linjärt medelpris senaste 30d.
+# Används för att beräkna besparing 30d 
+  - platform: statistics
+    name: "Medelpris 30d"
+    unique_id: avg_electic_price_30d
+    entity_id: input_number.el_price_last_15min
+    state_characteristic: mean
+    max_age:
+      days: 30
+      
+
+
+# en utility mätare som summerar importerad energi på 15 minuter.
+utility_meter:
+  grid_import_15m:
+    source: sensor.grid_import_energi
+    cycle: quarter-hourly
+    unique_id: grid_import_15m
+
+
+#Ett input_number för att spara undan det "fulla" värdet föregående 15 minuter
+#Används för att beräkna kostnad föregående 15 minuter
+input_number:
+  el_price_last_15min:
+    name: Elpris föregående 15 min
+    min: 0
+    max: 20
+    step: 0.0001
+    unit_of_measurement: "SEK/kWh"
+
+#Ett input_number för att spara undan det "fulla" värdet föregående 15 minuter
+#Används för att beräkna kostnad föregående 15 minuter
+  el_import_last_15min:
+    name: Importerad el föregående 15 min
+    min: 0
+    max: 20
+    step: 0.001
+    unit_of_measurement: "kWh"
+
+#Ett input_number för att lagra elcertifikatsavgiften
+#Uppdateras från GUI annars används 1.25 som default i beräknignarna
+#Används för att beräkna verkligt elpris
+  hus_el_elcertificatsavgift_ink_moms:
+    name: Hus EL Elcertificatsavgift (  ink moms )
+    min: 0
+    max: 100
+    step: 0.001
+    mode: box
+    unit_of_measurement: "Öre/kWh"
+
+
+#Ett input_number för att lagra energiskatt
+#Uppdateras från GUI annars används 53.5 som default i beräknignarna
+#Används för att beräkna verkligt elpris
+  hus_el_energiskatt:
+    name: Hus El Energiskatt
+    min: 0
+    max: 100
+    step: 0.001
+    mode: box
+    unit_of_measurement: "Öre/kWh"
+
+#Ett input_number för att lagra elnätsavgift
+#Uppdateras från GUI annars används 6,25 som default i beräknignarna
+#Används för att beräkna verkligt elpris
+  hus_el_rorlig_elnatsavg:
+    name: Hus El Rörlig elnätsavg.
+    min: 0
+    max: 100
+    step: 0.001
+    mode: box
+    unit_of_measurement: "Öre/kWh"
+
+
+#En sensor som beräknar kostanden föregånde 15 min.
+#Används för att beräkna vägt pris
+template:
+  - sensor:
+      - name:   
+        unique_id: electric_cost_prev_15min
+        unit_of_measurement: "SEK"
+        state: >
+          {{ states('input_number.el_import_last_15min') | float(0)
+             * states('input_number.el_price_last_15min') | float(0) }}
+
+#En sensor för vägt elpris föregående 24h
+#Används för att beräkna besparing/kostnad
+  - sensor:
+      - name: "Vägt elpris 24h"
+        unique_id: weighted_electricity_price_24h
+        unit_of_measurement: "SEK/kWh"
+        state: >
+          {% set total_kostnad = states('sensor.medel_elkostnad_24h') | float %}
+          {% set total_energi = states('sensor.medel_elimport_24h') | float %}
+          {% if total_energi > 0 %}
+            {{ (total_kostnad / total_energi) | round(4) }}
+          {% else %}
+            0
+          {% endif %}
+
+#En sensor för vägt elpris föregående 7d
+#Används för att beräkna besparing/kostnad
+  - sensor:
+      - name: "Vägt elpris 7d"
+        unique_id: weighted_electricity_price_7d
+        unit_of_measurement: "SEK/kWh"
+        state: >
+          {% set total_kostnad = states('sensor.medel_elkostnad_7d') | float(0) %}
+          {% set total_energi = states('sensor.medel_elimport_7d') | float(0) %}
+          {% if total_energi > 0 %}
+            {{ (total_kostnad / total_energi) | round(4) }}
+          {% else %}
+            0
+          {% endif %}
+
+#En sensor för vägt elpris föregående 30d
+#Används för att beräkna besparing/kostnad
+  - sensor:
+      - name: "Vägt elpris 30d"
+        unique_id: weighted_electricity_price_30d
+        unit_of_measurement: "SEK/kWh"
+        state: >
+          {% set total_kostnad = states('sensor.medel_elkostnad_30d') | float(0) %}
+          {% set total_energi = states('sensor.medel_elimport_30d') | float(0) %}
+          {% if total_energi > 0 %}
+            {{ (total_kostnad / total_energi) | round(4) }}
+          {% else %}
+            0
+          {% endif %}
+
+#En sensor som beräknar dagens elpris
+#Används för närvarande inte utan används som jämförelse.
+#Orsaken är att dne gäller hela dygnet medan importen räknas fram till nuläget.
+  - sensor:
+      - name: "Medelpris dag"
+        unit_of_measurement: "SEK/kWh"
+        unique_id: electric_price_today
+        state: >
+          {% set price = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'mean') %}
+          {% set elcert = states('input_number.hus_el_elcertificatsavgift_ink_moms') | float(1.25) / 100 %}
+          {% set energiskatt = states('input_number.hus_el_energiskatt') | float(53.5) / 100 %}
+          {% set elnatavgift = states('input_number.hus_el_rorlig_elnatsavg') | float(6.25)  / 100 %}
+          {{ price+elcert+energiskatt+elnatavgift | round(2) }}    
+
+
+#En sensor som beräknar besparing/kostnad senaste 24h
+#den tar skillnaden ellan linjärt pris och vägt pris samt multiplicerar det med
+#snittförbrukningen för 15 min och med 96 för antal kvartar på ett dygn 
+#ger bersparing ( eller kostnad ) för senaste 24h
+  - sensor:
+      - name: besparing 24h
+        unique_id: cost_saving_24h
+        unit_of_measurement: "SEK"
+        state: >
+          {% set vagt_pris = states('sensor.vagt_elpris_24h') | float(0) %}
+          {% set linjart_pris = states('sensor.medelpris_24h') | float(0) %}
+          {% set forbrukning = states('sensor.medel_elimport_24h') | float(0) %}
+          {{ forbrukning*(linjart_pris-vagt_pris)*96 | float(0)}}  
+
+#En sensor som beräknar besparing/kostnad senaste 7d
+#den tar skillnaden ellan linjärt pris och vägt pris samt multiplicerar det med
+#snittförbrukningen för 15 min och med 96*7 för antal kvartar på 7 dygn
+#ger bersparing ( eller kostnad ) för senaste 7d
+  - sensor:
+      - name: besparing 7d
+        unique_id: cost_saving_7d
+        unit_of_measurement: "SEK"
+        state: >
+          {% set vagt_pris = states('sensor.vagt_elpris_7d') | float(0) %}
+          {% set linjart_pris = states('sensor.medelpris_7d') | float(0) %}
+          {% set forbrukning = states('sensor.medel_elimport_7d') | float(0) %}
+          {{ forbrukning*(linjart_pris-vagt_pris)*96*7 | float(0)}}  
+
+#En sensor som beräknar besparing/kostnad senaste 30d
+#den tar skillnaden ellan linjärt pris och vägt pris samt multiplicerar det med
+#snittförbrukningen för 15 min och med 96*30 för antal kvartar på 30 dygn 
+#ger bersparing ( eller kostnad ) för senaste 30d
+  - sensor:
+      - name: besparing 30d
+        unique_id: cost_saving_30d
+        unit_of_measurement: "SEK"
+        state: >
+          {% set vagt_pris = states('sensor.vagt_elpris_30d') | float(0) %}
+          {% set linjart_pris = states('sensor.medelpris_30d') | float(0) %}
+          {% set forbrukning = states('sensor.medel_elimport_30d') | float(0) %}
+          {{ forbrukning*(linjart_pris-vagt_pris)*96*30 | float(0)}}  
+
+
+#En automation för att spara undan elpriset för 15 minutersperioden
+#Orsaken är att kunna matcha det med rätt förbrukning när man beräknar kostnad
+automation:
+  - alias: Spara totalt elpris föregående 15 min
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.el_price_last_15min
+        data:
+          value: >
+            {% set now_min = now().minute %}
+            {% set quarter_index = ((now().hour * 60 + now_min) // 15) - 1 %}
+            {% set price_list = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'raw_today') %}
+            {% if quarter_index < 0 %}
+              {% set spot_price = price_list[95].value %}
+            {% else %}
+              {% set spot_price = price_list[quarter_index].value %}
+            {% endif %}
+            {% set elcert = states('input_number.hus_el_elcertificatsavgift_ink_moms') | float(1.25) / 100 %}
+            {% set energiskatt = states('input_number.hus_el_energiskatt') | float(53.5) / 100 %}
+            {% set elnatavgift = states('input_number.hus_el_rorlig_elnatsavg') | float(6.25)  / 100 %}
+            {{ (spot_price + elcert + energiskatt + elnatavgift) | round(4) }}
+
+#En automation som sparar undan värdet på utility metern från föregående 15 min innan den resetas.
+#Detta gör att man kan kombinera rätt förbrukning med rätt pris enl ovan.
+  - alias: Spara elförbrukning föregående 15 min
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.el_import_last_15min
+        data:
+          value: >
+            {% set current_value = states('sensor.grid_import_15m') | float(0) %}
+            {% set last_period = state_attr('sensor.grid_import_15m', 'last_period') | float(0) %}
+            {% if last_period > 0 %}
+              {{ last_period }}
+            {% else %}
+              {{ current_value }}
+            {% endif %}
