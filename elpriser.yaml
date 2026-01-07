@@ -122,7 +122,7 @@ template:
         state_class: measurement
 
 
-        #En sensor som beräknar kostanden föregånde 15 min.
+#En sensor som beräknar kostanden föregånde 15 min.
 #Används för att beräkna vägt pris
   - sensor:
       - name: Elkostnad föregående 15 min
@@ -174,7 +174,7 @@ template:
           {% if total_energi > 0 %}
             {{ (total_kostnad / total_energi) | round(4) }}
           {% else %}
-             {{ states('input_number.senaste_vagt_elpris_30d') | float(0) }}
+            0
           {% endif %}
 
   #En sensor som beräknar dagens elpris
@@ -396,14 +396,6 @@ input_number:
     mode: box
     unit_of_measurement: "Öre/kWh"
 
-  #Ett test för att undvika 0 i vägt timpris i samband med omstart¨
-  senaste_vagt_elpris_30d:
-    name: "Senaste vägda elpris 30d"
-    min: 0
-    max: 100
-    step: 0.001
-    unit_of_measurement: "SEK"
-
 #En automation för att spara undan elpriset för 15 minutersperioden
 #Orsaken är att kunna matcha det med rätt förbrukning när man beräknar kostnad
 automation:
@@ -419,7 +411,7 @@ automation:
           value: >
             {% set now_min = now().minute %}
             {% set quarter_index = ((now().hour * 60 + now_min) // 15) - 1 %}
-            {% set price_list = state_attr('sensor.elpris', 'raw_today') %}
+            {% set price_list = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'raw_today') %}
             {% if quarter_index < 0 %}
               {% set spot_price = price_list[95].value %}
             {% else %}
@@ -450,15 +442,3 @@ automation:
               {{ current_value }}
             {% endif %}
 
-  - alias: "Uppdatera senaste vägda elpriset 30d"
-    trigger:
-      - platform: state
-        entity_id: sensor.vagt_elpris_30d
-        not_to: "unavailable"
-        not_from: "unavailable"
-    action:
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.senaste_vagt_elpris_30d
-        data:
-          value: "{{ states('sensor.weighted_electricity_price_30d') | float(0) }}"
