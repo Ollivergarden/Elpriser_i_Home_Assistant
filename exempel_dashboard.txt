@@ -1,8 +1,9 @@
-  - type: sections
-    max_columns: 4
-    title: Kostandsoptimering
-    path: kostandsoptimering
+views:
+  - title: Home
+    path: kostnadsoptimering
     icon: mdi:battery-unknown
+    type: sections
+    max_columns: 4
     sections:
       - type: grid
         cards:
@@ -10,17 +11,13 @@
             content: >
               ## ⚡ Kostnadsoptimering av elräkning
 
-              Denna vy visar **effekten av att styra elförbrukning**. ibland är
-              det viktigast att undvika topparna och ibland gäller det att lägga
-              lasten på rätt dag. Här kan du se hur det går för dig och dina
-              optimeringar både manuella och automatiska.
+              Denna vy visar **effekten av att styra elförbrukning**. Ibland är det viktigast att undvika topparna och ibland gäller det att lägga lasten på rätt dag. Här kan du se hur det går för dig och dina optimeringar både manuella och automatiska.
 
+              Du kan även justera avgifter nedan så att det stämmer för dina förutsättningar.
 
-              Du kan även justera avgifter nedan så att det stämmer för dina
-              förutsättnningar.
-          - chart_type: line
+          - type: statistics-graph
+            chart_type: line
             period: 5minute
-            type: statistics-graph
             entities:
               - sensor.solax_grid_import
               - sensor.solax_house_load
@@ -35,12 +32,14 @@
             title: Import/Export och Förbrukning
             unit: W
             days_to_show: 1
+
       - type: grid
         cards:
           - type: custom:mushroom-title-card
             title: Elpris - Vägt vs linjärt
-          - square: false
-            type: grid
+
+          - type: grid
+            square: false
             cards:
               - type: custom:mushroom-entity-card
                 entity: sensor.vagt_elpris_24h
@@ -48,51 +47,60 @@
                 icon: mdi:scale-balance
                 primary_info: state
                 secondary_info: name
+
               - type: custom:mushroom-entity-card
                 entity: sensor.medelpris_24h
                 name: Linjärt medelpris
                 icon: mdi:chart-line
                 primary_info: state
                 secondary_info: name
+
               - type: custom:mushroom-entity-card
                 entity: sensor.vagt_elpris_7d
                 name: Vägt elpris 7d
                 icon: mdi:scale-balance
                 primary_info: state
                 secondary_info: name
+
               - type: custom:mushroom-entity-card
                 entity: sensor.medelpris_7d
                 name: Linjärt medelpris
                 icon: mdi:chart-line
                 primary_info: state
                 secondary_info: name
+
               - type: custom:mushroom-entity-card
                 entity: sensor.vagt_elpris_30d
                 name: Vägt elpris 30d
                 icon: mdi:scale-balance
                 primary_info: state
                 secondary_info: name
+
               - type: custom:mushroom-entity-card
                 entity: sensor.medelpris_30d
                 name: Linjärt medelpris
                 icon: mdi:chart-line
                 primary_info: state
                 secondary_info: name
+
               - type: custom:mushroom-entity-card
                 entity: sensor.nordpool_kwh_se2_sek_2_10_025
                 icon: mdi:chart-line
                 primary_info: state
                 secondary_info: name
-                name: aktuellt spot pris
+                name: Aktuellt spotpris
+
               - type: custom:mushroom-entity-card
                 entity: sensor.medelpris_dag
                 icon: mdi:chart-line
                 primary_info: state
                 secondary_info: name
-                name: elpris dagens medel
+                name: Elpris dagens medel
             columns: 2
+
           - type: custom:mushroom-title-card
-            title: 💰 + Besparing / - merkostnad
+            title: 💰 + Besparing / - Merkostnad
+
           - type: grid
             columns: 3
             square: false
@@ -102,16 +110,19 @@
                 name: 24 timmar
                 icon: mdi:cash
                 icon_color: green
+
               - type: custom:mushroom-entity-card
                 entity: sensor.besparing_7d
                 name: 7 dagar
                 icon: mdi:calendar-week
                 icon_color: green
+
               - type: custom:mushroom-entity-card
                 entity: sensor.besparing_30d
                 name: 30 dagar
                 icon: mdi:calendar-month
                 icon_color: green
+
           - type: entities
             entities:
               - entity: binary_sensor.price_opt_blockingmode_active
@@ -119,6 +130,7 @@
               - entity: input_number.price_opt_limit_percent
               - entity: input_number.price_opt_diff_limit
             title: Optimeringsparametrar
+
       - type: grid
         cards:
           - type: history-graph
@@ -134,6 +146,7 @@
               - entity: sensor.medelpris_7d
               - entity: sensor.medelpris_30d
               - entity: sensor.medelpris_dag
+
           - type: history-graph
             hours_to_show: 168
             refresh_interval: 300
@@ -141,9 +154,10 @@
               - entity: sensor.besparing_24h
               - entity: sensor.besparing_7d
               - entity: sensor.besparing_30d
-            title: Besparing / merkostnad
+            title: Besparing / Merkostnad
             max_y_axis: 150
             min_y_axis: -50
+
           - type: entities
             entities:
               - entity: input_number.hus_el_elcertificatsavgift_ink_moms_old
