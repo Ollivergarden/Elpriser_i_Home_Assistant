@@ -18,9 +18,9 @@ Ett paket för att konfigurera setup och blockera bergvärmepump vid höga prise
 Används med fördel ihop med paket för att beräkna priser och besparingar.
 
 ## Konfigurering
-*price_opt_limit_percent*: Vid hur många procent ner från dagens maxpris ska pumpen blockeras
-*price_opt_dm_limit*: Hur långt ner ska pumpens gradminuter ( DM ) få gå innan blockeringen avbryts ( eller inte startar )
-*price_opt_diff_limit*: Hur stor ska skillnaden mellan dagens högsta och lägsta värde vara för att det ska vara värt att försöka styra.
+- *price_opt_limit_percent*: Vid hur många procent ner från dagens maxpris ska pumpen blockeras
+- *price_opt_dm_limit*: Hur långt ner ska pumpens gradminuter ( DM ) få gå innan blockeringen avbryts ( eller inte startar )
+- *price_opt_diff_limit*: Hur stor ska skillnaden mellan dagens högsta och lägsta värde vara för att det ska vara värt att försöka styra.
 
 # Dashboard
 Det finns med kod för en exempeldashboard. 
