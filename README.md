@@ -17,6 +17,10 @@ vad som krävs på denna sida https://ontour.ollivergarden.se ( snart )
 Ett paket för att konfigurera setup och blockera bergvärmepump vid höga priser.
 Används med fördel ihop med paket för att beräkna priser och besparingar.
 
+*Förusättningar*
+* [Nibe Heatpump](https://www.home-assistant.io/integrations/nibe_heatpump/)
+
+  
 ## Konfigurering
 - *price_opt_limit_percent*: Vid hur många procent ner från dagens maxpris ska pumpen blockeras
 - *price_opt_dm_limit*: Hur långt ner ska pumpens gradminuter ( DM ) få gå innan blockeringen avbryts ( eller inte startar )
