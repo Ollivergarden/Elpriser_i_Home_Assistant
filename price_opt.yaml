@@ -1,0 +1,142 @@
+# =========================================================================
+# Package Price Opt
+# Home Assistant kod för att styra ner större förbrukare. Till att börja med 
+# Bergvärmepumpen Nibe S1255. Kommer ev att utökas.
+# Passar bra ihop med Package Price Calc (heter idag elpriser)
+#         
+# WishList:
+# Billaddare
+# Spabad
+#
+# @Author   Tobias Rosén
+# @Date     2026-01-22
+#
+# @Todo:
+# # ...
+# 
+# =========================================================================
+
+
+# =========================================================================
+# Binary_Sensor
+# price_opt_blockingmode_active
+# 
+# **************************************
+#
+# input number
+# **************************************
+# price_opt_limit_percent
+# price_opt_dm_limit
+# price_opt_diff_limit
+# 
+# Automations
+# **************************************
+# price_opt_blocking
+# =========================================================================
+
+# ****************
+# Sensorer mm definerade  på andra ställen:
+# 
+# == Nordpool integrationen ==
+# sensor.nordpool_kwh_se2_sek_2_10_025
+# 
+# ****************
+
+# Input_number som anger vilken proocent ner från maxpris som optimering ska gälla
+# Används som en parameter för att avgöra om en last ska blockeras
+input_number:
+  price_opt_limit_percent:
+    name: Gräns för optimering
+    min: 0
+    max: 100
+    step: 0.1
+    mode: box
+    unit_of_measurement: "%"
+
+# Input_number som anger vilken gräns för gradminuter som ska gälla
+# Används som en parameter för att avgöra om blocker ska avbrytas.
+  price_opt_dm_limit:
+    name: Gräns för gradminuter
+    min: -2000
+    max: 100
+    step: 1
+    mode: box
+    unit_of_measurement: "DM"
+
+# Input_number som anger vilken minsta skillnad mellan högsta och lägsta dagspris som ska gälla.
+# Används som en parameter för att avgöra om en last ska blockeras. Vid för liten diff är det ingen idé
+  price_opt_diff_limit:
+    name: Minsta skillnad pris
+    min: 0
+    max: 5
+    step: 0.01
+    mode: box
+    unit_of_measurement: "SEK"
+
+# A template sesor som avgör om värmepumpen ska blockeras
+# Om skillnaden mellan högsat och lägsta priser är tillräkligt hög OCH
+# Nuvarande 15 minuterspris är över gränsen OCH 
+# Pumpens gradminuter är över gränsen SÅ anger denna att pumpen ska blockeras
+# Den här sensorn används i automationen för att blockera eller avblockera pumpen
+template:
+  - binary_sensor:
+    - name: price_opt_blockingmode_active
+      unique_id: price_opt_blockingmode_actvie
+      device_class: connectivity
+      state: >
+        {% set min = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'min') | float(0) %}
+        {% set max = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'max') | float(0) %}
+        {% set current = states('sensor.nordpool_kwh_se2_sek_2_10_025') | float(0) %}
+        {% set diff = max-min %}
+        {% set diff_limit = states('input_number.price_opt_diff_limit') |float(0.5) %}
+        {% set dm = states('number.degree_minutes_40012') | float(0) %}
+        {% set dm_limit = states('input_number.price_opt_dm_limit') | float(-750) %}
+        {% set limit_percent = states('input_number.price_opt_limit_percent') | float(25) %}
+        {% set limit = max*(1-limit_percent/100) %}
+        {% if diff>diff_limit and current>limit and dm>dm_limit %}
+          {{ true }}
+        {% else %}
+          {{ false }}
+        {% endif %}
+
+
+automation:
+- alias: price_opt_blocking
+  description: "En automation för att blockera värmepumpen när elpriset är högt. Den tar hänsyn till om skillnaden mellan högsta och lägsta pris är för liten då skippar den blockering. Om gradminuter är för lågt så skippar den blockering så vi inte riskerar att eltillskott går in eller vi får problem med effekttariffer. Hanteras i paket price_opt"
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id:
+        - binary_sensor.price_opt_blockingmode_active
+      to:
+        - "on"
+      id: blockingModeActive_ON
+    - trigger: state
+      entity_id:
+        - binary_sensor.price_opt_blockingmode_active
+      to:
+        - "off"
+      id: blockingModeActive_OFF
+  conditions: []
+  actions:
+    - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - blockingModeActive_ON
+        sequence:
+          - device_id: 838532b18d78f2a8e19fb3dd323a9579
+            domain: number
+            entity_id: ef639e9b208b15881642c6ff6f3d5279
+            type: set_value
+            value: 1
+      - conditions:
+          - condition: trigger
+            id:
+              - blockingModeActive_OFF
+        sequence:
+          - device_id: 838532b18d78f2a8e19fb3dd323a9579
+            domain: number
+            entity_id: ef639e9b208b15881642c6ff6f3d5279
+            type: set_value
+            value: 0
