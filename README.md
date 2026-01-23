@@ -13,7 +13,7 @@ Home Assistant kan konfigureras på 3 oliika sätt, dessa kan även kombineras.
 Denna fil avser hantering via paket. Om du inte jobbat med det tidigare kan du läsa om 
 vad som krävs på denna sida https://ontour.ollivergarden.se ( snart )
 
-# Blockering av bergvärmepump
+# Blockering av bergvärmepump ( price_opt.yaml )
 Ett paket för att konfigurera setup och blockera bergvärmepump vid höga priser.
 Används med fördel ihop med paket för att beräkna priser och besparingar.
 
