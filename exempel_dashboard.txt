@@ -25,7 +25,7 @@
               - sensor.solax_grid_import
               - sensor.solax_house_load
               - sensor.solax_grid_export
-              - sensor.compressor_power_input_31049_2
+              - sensor.compressor_power_input_31049
               - sensor.myenergi_zappi_24926328_power_ct_internal_load
               - sensor.solax_pv_power_total
               - sensor.solax_battery_power_charge
@@ -79,7 +79,7 @@
                 primary_info: state
                 secondary_info: name
               - type: custom:mushroom-entity-card
-                entity: sensor.gen_elpris
+                entity: sensor.nordpool_kwh_se2_sek_2_10_025
                 icon: mdi:chart-line
                 primary_info: state
                 secondary_info: name
@@ -112,6 +112,13 @@
                 name: 30 dagar
                 icon: mdi:calendar-month
                 icon_color: green
+          - type: entities
+            entities:
+              - entity: binary_sensor.price_opt_blockingmode_active
+              - entity: input_number.price_opt_dm_limit
+              - entity: input_number.price_opt_limit_percent
+              - entity: input_number.price_opt_diff_limit
+            title: Optimeringsparametrar
       - type: grid
         cards:
           - type: history-graph
