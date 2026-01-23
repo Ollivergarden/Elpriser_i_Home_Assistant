@@ -1,3 +1,10 @@
+# Sammanfattning
+Här samlar jag kod relaterat till elpriser och optimeringar i Home Assistant.
+Just nu finns 
+- Elpriser-yaml, hanterar beräkning av vägda och aritmetriska elpriser på olika tider samt besparing/extrakostand beroende på när elen förbrukats
+- price_opt.yaml, hanterar blockering av Nibe värmepump baserat på elpris och gradminuter
+- exempel_dashboard.txt, en enkle dasboard för att visualisera ovan
+  
 # Beräkning elbesparing
 Ett "package" för home assistant som beräknar besaring av kostnadsoptimeringar baserad på kvartspriser
 
