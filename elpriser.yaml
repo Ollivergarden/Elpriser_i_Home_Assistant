@@ -7,8 +7,8 @@
 #
 # OBS !!!
 # Du behöver byta ut följande mot dina egna
-# sensor.nordpool_kwh_se2_sek_2_10_025 rad: de 2 första sensorerna
-# sensor.solax_grid_import rad: den 3.e sensorn
+# sensor.nordpool_kwh_se2_sek_2_10_025 
+# sensor.solax_grid_import 
 #
 # WishList:
 # * försäljning av el
@@ -18,9 +18,7 @@
 # @Date     2026-01-04
 #
 # @Todo:
-# kolla om fixen mot 0 vid omstart på sensor.vagt_elpris_30d lyckades
-# i så fall implemetera på 7d och 24h
-#
+# 
 #
 # =========================================================================
 
@@ -55,9 +53,6 @@
 #
 # Template - sensor
 # **************************************
-# sensor.gen_elpris
-# sensor.gen_elpris_medel
-# sensor.gen_import_effekt
 # sensor.elkostnad_foregaende_15_min
 # sensor.vagt_elpris_24h
 # sensor.vagt_elpris_7d
@@ -91,37 +86,6 @@
 # ****************
 
 template:
-#En sensor för att underätta att dela koden. Här nedan byter du ut
-#sensor.nordpool_kwh_se2_sek_2_10_025 mot den som motsvarar ditt system
-  - sensor:
-      - name: gen elpris
-        unique_id: gen_elpris
-        unit_of_measurement: "SEK/kWh"
-        state: >
-          {{ states('sensor.nordpool_kwh_se2_sek_2_10_025') | float(0) }}
-        state_class: measurement
-
-#En sensor för att underätta att dela koden. Här nedan byter du ut
-#sensor.nordpool_kwh_se2_sek_2_10_025 mot den som motsvarar ditt system
-  - sensor:
-      - name: gen elpris_medel
-        unique_id: gen_elpris_medel
-        unit_of_measurement: "SEK/kWh"
-        state: >
-          {{ state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'mean') | float(0) }}
-        state_class: measurement
-
-#En sensor för att underätta att dela koden. Här nedan byter du ut
-#sensor.solax_grid_import mot den som motsvarar ditt system
-  - sensor:
-      - name: gen import effekt
-        unique_id: gen_import_effekt
-        unit_of_measurement: "W"
-        state: >
-          {{ states('sensor.solax_grid_import') | float(0) }}
-        state_class: measurement
-
-
 #En sensor som beräknar kostanden föregånde 15 min.
 #Används för att beräkna vägt pris
   - sensor:
@@ -179,13 +143,13 @@ template:
 
   #En sensor som beräknar dagens elpris
   #Används för närvarande inte utan används som jämförelse.
-  #Orsaken är att dne gäller hela dygnet medan importen räknas fram till nuläget.
+  #Orsaken är att den gäller hela dygnet medan importen räknas fram till nuläget.
   - sensor:
       - name: "Medelpris dag"
         unit_of_measurement: "SEK/kWh"
         unique_id: electric_price_today
         state: >
-          {% set price = states('sensor.gen_elpris_medel') | float(0) %}
+          {% set price = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'mean' ) | float(0) %}
           {% set elcert = states('input_number.hus_el_elcertificatsavgift_ink_moms') | float(1.25) / 100 %}
           {% set energiskatt = states('input_number.hus_el_energiskatt') | float(53.5) / 100 %}
           {% set elnatavgift = states('input_number.hus_el_rorlig_elnatsavg') | float(6.25)  / 100 %}
@@ -237,8 +201,7 @@ template:
 # byt ut sensor.solax_grid_import mot din effekt sensor.
 sensor:
   - platform: integration
-#    source: sensor.solax_grid_import
-    source: sensor.gen_import_effekt
+    source: sensor.solax_grid_import
     name: "Grid Import Energi"
     unique_id: grid_import_energy
     unit_prefix: k
