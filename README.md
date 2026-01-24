@@ -14,7 +14,7 @@ Ett "package" för home assistant som beräknar besaring av kostnadsoptimeringar
 
 # Dokumentation
 
-Du kan läsa om bakgrund, beräkingar mm på https://ontour.ollivergarden.se ( snart )
+Du kan läsa om bakgrund, beräkingar mm på [https://ontour.ollivergarden.se](https://www.ontour.ollivergarden.se/mata-effektiviteten-av-kostandsoptimering-av-timpriser-och-kvartspriser-med-hjalp-av-home-assistant/)
 
 Home Assistant kan konfigureras på 3 oliika sätt, dessa kan även kombineras.
 Denna fil avser hantering via paket. Om du inte jobbat med det tidigare kan du läsa om 
