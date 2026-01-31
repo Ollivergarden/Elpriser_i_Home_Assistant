@@ -39,6 +39,9 @@
 # 
 # == Nordpool integrationen ==
 # sensor.nordpool_kwh_se2_sek_2_10_025
+#
+# == Nibe Heatpump ==
+# number.degree_minutes_40012
 # 
 # ****************
 
@@ -84,9 +87,9 @@ template:
       unique_id: price_opt_blockingmode_actvie
       device_class: connectivity
       state: >
-        {% set min = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'min') | float(0) %}
-        {% set max = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'max') | float(0) %}
-        {% set current = states('sensor.nordpool_kwh_se2_sek_2_10_025') | float(0) %}
+        {% set min = states('sensor.nord_pool_se2_lowest_price') | float(0) %}
+        {% set max = states('sensor.nord_pool_se2_highest_price') | float(0) %}
+        {% set current = states('sensor.nord_pool_se2_current_price') | float(0) %}
         {% set diff = max-min %}
         {% set diff_limit = states('input_number.price_opt_diff_limit') |float(0.5) %}
         {% set dm = states('number.degree_minutes_40012') | float(0) %}
@@ -98,6 +101,29 @@ template:
         {% else %}
           {{ false }}
         {% endif %}
+      attributes:
+        current: > 
+          {% set current = states('sensor.nord_pool_se2_current_price') | float(0) %}
+          {{ current }}
+        limit: >
+          {% set max = states('sensor.nord_pool_se2_highest_price') | float(0) %}
+          {% set limit_percent = states('input_number.price_opt_limit_percent') | float(25) %}
+          {% set limit = max*(1-limit_percent/100) %}
+          {{ limit }}
+        dm: >
+          {% set dm = states('number.degree_minutes_40012') | float(0) %}
+          {{ dm }}
+        dm limit: >
+          {% set dm_limit = states('input_number.price_opt_dm_limit') | float(-750) %}
+          {{ dm_limit}}
+        diff: >
+          {% set min = states('sensor.nord_pool_se2_lowest_price') | float(0) %}
+          {% set max = states('sensor.nord_pool_se2_highest_price') | float(0) %}
+          {% set diff = max-min %}
+          {{ diff }}
+        diff_limit: >
+          {% set diff_limit = states('input_number.price_opt_diff_limit') |float(0.5) %}
+          {{diff_limit}}
 
 
 automation:
