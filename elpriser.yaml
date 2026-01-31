@@ -7,8 +7,12 @@
 #
 # OBS !!!
 # Du behöver byta ut följande mot dina egna
-# sensor.nordpool_kwh_se2_sek_2_10_025 
-# sensor.solax_grid_import 
+# sensor.nord_pool_se2_daily_average
+# sensor.nord_pool_se2_previous_price
+# sensor.solax_grid_import
+#
+# Avsnittet "kod från Hollbjär" Behöver uppdateras om du anävnder hans Apex kort.
+# Dessa finns med i exempel dasboard. De påverkar dock inte beräkningarna
 #
 # WishList:
 # * försäljning av el
@@ -149,7 +153,7 @@ template:
         unit_of_measurement: "SEK/kWh"
         unique_id: electric_price_today
         state: >
-          {% set price = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'mean' ) | float(0) %}
+          {% set price = states('sensor.nord_pool_se2_daily_average' ) | float(0) %}
           {% set elcert = states('input_number.hus_el_elcertificatsavgift_ink_moms') | float(1.25) / 100 %}
           {% set energiskatt = states('input_number.hus_el_energiskatt') | float(53.5) / 100 %}
           {% set elnatavgift = states('input_number.hus_el_rorlig_elnatsavg') | float(6.25)  / 100 %}
@@ -196,6 +200,74 @@ template:
           {% set linjart_pris = states('sensor.medelpris_30d') | float(0) %}
           {% set forbrukning = states('sensor.medel_elimport_30d') | float(0) %}
           {{ forbrukning*(linjart_pris-vagt_pris)*96*30 | float(0)}}
+
+# kod baserad på Christian Hollbjär inlägg på FB
+# https://pastebin.com/clone/Q2R7t4qN
+# https://www.facebook.com/groups/737654973088984/search/?q=apex&locale=sv_SE
+
+  - trigger:
+      - trigger: time_pattern
+        minutes: /10
+      - trigger: homeassistant
+        event: start
+    action:
+      - action: nordpool.get_prices_for_date
+        data:
+          config_entry: 01KFVHQHNJJFHNJZ1Z44H55AFK #byt till din config entry!
+          date: "{{ now().date() + timedelta(days=1) }}"
+          areas: SE2
+          currency: SEK
+        response_variable: tomorrow_price
+    sensor:
+      - name: Tomorrow price
+        unique_id: se2_tomorrow_price
+        state: >
+          {% set data = namespace(prices=[]) %}
+          {% for state in tomorrow_price['SE2'] %}
+            {% set data.prices = data.prices + [(state.price / 1000)] %}
+          {% endfor %}
+          {{data.prices}}
+        attributes:
+          data: >
+            {% set data = namespace(prices=[]) %}
+            {% for state in tomorrow_price['SE2'] %}
+              {# Denna rad är den enda som är ändrad #}
+              {% set data.prices = data.prices + [{'start': (state.start | as_datetime | as_local).isoformat(), 'end': (state.end | as_datetime | as_local).isoformat(), 'price': state.price/1000}] %}
+            {% endfor %}
+            {{data.prices}}
+  - trigger:
+      - trigger: time_pattern
+        minutes: /10
+      - trigger: homeassistant
+        event: start
+    action:
+      - action: nordpool.get_prices_for_date
+        data:
+          config_entry: 01KFVHQHNJJFHNJZ1Z44H55AFK #byt till din config entry!
+          date: "{{ now().date() }}"
+          areas: SE2
+          currency: SEK
+        response_variable: today_price
+    sensor:
+      - name: Today price
+        unique_id: se2_today_price
+        state: >
+          {% set data = namespace(prices=[]) %}
+          {% for state in today_price['SE2'] %}
+            {% set data.prices = data.prices + [(state.price / 1000)] %}
+          {% endfor %}
+          {{data.prices}}
+        attributes:
+          data: >
+            {% set data = namespace(prices=[]) %}
+            {% for state in today_price['SE2'] %}
+              {# Denna rad är den enda som är ändrad #}
+              {% set data.prices = data.prices + [{'start': (state.start | as_datetime | as_local).isoformat(), 'end': (state.end | as_datetime | as_local).isoformat(), 'price': state.price/1000}] %}
+            {% endfor %}
+            {{data.prices}}
+
+# SLut på kod från Hollbjär
+
 
 # En sensor för att göra om importerad effekt till importerad energi
 # byt ut sensor.solax_grid_import mot din effekt sensor.
@@ -372,14 +444,7 @@ automation:
           entity_id: input_number.el_price_last_15min
         data:
           value: >
-            {% set now_min = now().minute %}
-            {% set quarter_index = ((now().hour * 60 + now_min) // 15) - 1 %}
-            {% set price_list = state_attr('sensor.nordpool_kwh_se2_sek_2_10_025', 'raw_today') %}
-            {% if quarter_index < 0 %}
-              {% set spot_price = price_list[95].value %}
-            {% else %}
-              {% set spot_price = price_list[quarter_index].value %}
-            {% endif %}
+            {% set spot_price = states('sensor.nord_pool_se2_previous_price') | float(0) %}
             {% set elcert = states('input_number.hus_el_elcertificatsavgift_ink_moms') | float(1.25) / 100 %}
             {% set energiskatt = states('input_number.hus_el_energiskatt') | float(53.5) / 100 %}
             {% set elnatavgift = states('input_number.hus_el_rorlig_elnatsavg') | float(6.25)  / 100 %}
