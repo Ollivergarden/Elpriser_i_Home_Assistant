@@ -1,4 +1,7 @@
 # Sammanfattning
+OBS Fungerar inte tillsammans med solceller för tillfället !!!!
+
+
 Här samlar jag kod relaterat till elpriser och optimeringar i Home Assistant.
 Just nu finns 
 - Elpriser-yaml, hanterar beräkning av vägda och aritmetriska elpriser på olika tider samt besparing/extrakostand beroende på när elen förbrukats
